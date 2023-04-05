@@ -3,8 +3,8 @@ import pandas as pd
 import boto3
 import os
 # AWS credentials (replace with your own)
-AWS_ACCESS_KEY_ID = 'AKIA4DYTX5DQJI7QYMUY'
-AWS_SECRET_ACCESS_KEY ='A1r5JKqZtxL1NLakIiv7tplX4KdzlQPhKa9c5lpz'
+AWS_ACCESS_KEY_ID = ''
+AWS_SECRET_ACCESS_KEY =''
 
 # Set up S3 client
 s3 = boto3.client('s3',
