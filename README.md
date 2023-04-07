@@ -22,6 +22,7 @@ Les données collectées sont transférées depuis l'instance EC2 vers un bucket
 Les données stockées dans le bucket S3 sont traitées par AWS Glue, qui peut être utilisé pour effectuer les étapes de nettoyage des données et de feature engineering.
 **AWS Glue** est un service de traitement de données entièrement géré qui peut traiter les données stockées dans S3, éliminer les doublons, remplir les valeurs manquantes et appliquer des transformations de données.
 Les données nettoyées et transformées sont stockées dans un autre bucket S3.
+
 **Création d'un modèle de machine learning**:
 
 Les données nettoyées et transformées sont utilisées pour créer un modèle de machine learning qui prédit les prix de l'immobilier.
