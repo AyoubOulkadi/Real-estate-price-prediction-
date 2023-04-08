@@ -34,3 +34,20 @@ Le modèle est entraîné sur les données et évalué pour déterminer son exac
 Un fichier DAG est créé avec Apache Airflow pour automatiser le processus de scraping et de nettoyage des données.
 Le DAG peut être configuré pour s'exécuter à une fréquence spécifique (par exemple, une fois par jour) pour maintenir les données à jour.
 Airflow peut également envoyer des notifications par e-mail pour informer les utilisateurs du succès ou de l'échec du processus de scraping et de nettoyage.
+
+<a href="https://www.imgur.com"><img src="https://i.imgur.com/6pOlMcR.jpg" alt="Alt Text" title="Click to enlarge" width="800" height="400" /></a>
+
+<h2>Steps for realizing the project</h2>
+<h3> Start by scraping data in EC2 instance </h3> 
+<a href="https://www.imgur.com"><img src="https://i.imgur.com/0X09YX5.jpg" alt="Alt Text" title="Click to enlarge" width="800" height="400" /></a>
+<a href="https://www.imgur.com"><img src="https://i.imgur.com/NIQMnxm.jpg" alt="Alt Text" title="Click to enlarge" width="800" height="200" /></a>
+
+<h3> Data ingestion into S3 Bucket </h3>
+<a href="https://www.imgur.com"><img src="https://i.imgur.com/6S7xdNe.jpg" alt="Alt Text" title="Click to enlarge" width="800" height="400" /></a>
+
+<h3> Data preprocessing in AWS Glue </h3>
+<a href="https://www.imgur.com"><img src="https://i.imgur.com/F5g0ctA.jpg" alt="Alt Text" title="Click to enlarge" width="800" height="400" /></a>
+<a href="https://www.imgur.com"><img src="https://i.imgur.com/RshRjO8.jpg" alt="Alt Text" title="Click to enlarge" width="800" height="400" /></a>
+
+<h3> Now we will send the cleaned data into AWS Redshift for Data Warehouse </h3> 
+<a href="https://www.imgur.com"><img src="https://i.imgur.com/yT18UWV.jpg" alt="Alt Text" title="Click to enlarge" width="800" height="400" /></a> 
