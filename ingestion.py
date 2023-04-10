@@ -2,6 +2,7 @@ import boto3
 import pandas as pd
 import boto3
 import os
+
 # AWS credentials (replace with your own)
 AWS_ACCESS_KEY_ID = ''
 AWS_SECRET_ACCESS_KEY =''
@@ -23,5 +24,4 @@ for filename in os.listdir(folder_path):
 
         # Upload file to S3
         s3.upload_file(file_path, bucket_name, file_key)
-
         print(f"Uploaded {file_path} to S3 bucket {bucket_name} as {file_key}")
