@@ -5,6 +5,5 @@ if __name__ == "__main__":
     scraper.scrape_all_pages()
 
     df = scraper.get_data_as_dataframe()
-    print(df.head())  # Show first few rows
 
-    scraper.save_data("sarouty_data.csv")
+    scraper.save_data(r"C:\datalake\Real-estate-price-prediction\Data\Raw_Data\raw_sarouty_data.csv")

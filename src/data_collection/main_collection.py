@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
 
 class SaroutyScraper:
-    def __init__(self, max_pages=20, base_url="https://www.sarouty.ma/acheter/proprietes-a-vendre.html?page="):
+    def __init__(self, max_pages=158, base_url="https://www.sarouty.ma/acheter/proprietes-a-vendre.html?page="):
         """Initialize the scraper."""
         self.max_pages = max_pages
         self.driver = setup_driver()
@@ -28,7 +28,6 @@ class SaroutyScraper:
                 time.sleep(5)
             except Exception as e:
                 raise Exception(f"Error scraping page {page_number}: {e}")
-                continue
 
         self.driver.quit()
         logging.info(f"Scraping completed. Extracted {len(self.data)} records.")
