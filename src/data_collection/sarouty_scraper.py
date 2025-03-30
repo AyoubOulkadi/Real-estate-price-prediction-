@@ -11,7 +11,6 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 class SaroutyScraper:
     @staticmethod
     def scrape_all_pages(driver, pages, url):
-        """Loop through multiple pages and collect data."""
         data = []
 
         for page_number in range(1, pages + 1):
@@ -21,7 +20,8 @@ class SaroutyScraper:
                 data.extend(page_data)
                 time.sleep(5)
             except Exception as e:
-                raise Exception(f"Error scraping page {page_number}: {e}")
+                logging.error(f"Error scraping page {page_number}: {e}")
+                break
 
         driver.quit()
         logging.info(f"Scraping completed. Extracted {len(data)} records.")
@@ -29,8 +29,10 @@ class SaroutyScraper:
         return data
 
     @staticmethod
-    def save_data(data, raw_dest_path,filename):
-        """Save scraped data to CSV files partitioned by year/month/day."""
+    def save_data(data, raw_dest_path, filename):
+        if not data:
+            logging.warning("No data to save.")
+            return
         current_date = pd.to_datetime("today").date()
         data['date'] = current_date
 

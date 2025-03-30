@@ -6,7 +6,6 @@ from config.utils import IngestionHelper
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Set up S3 client
 s3 = boto3.client('s3',
                   aws_access_key_id=IngestionHelper.AWS_ACCESS_KEY_ID,
                   aws_secret_access_key=IngestionHelper.AWS_SECRET_ACCESS_KEY)
