@@ -1,27 +1,29 @@
 import boto3
-import pandas as pd
-import boto3
 import os
+import logging
 
-# AWS credentials (replace with your own)
-AWS_ACCESS_KEY_ID = ''
-AWS_SECRET_ACCESS_KEY =''
+from config.utils import IngestionHelper
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Set up S3 client
 s3 = boto3.client('s3',
-                  aws_access_key_id=AWS_ACCESS_KEY_ID,
-                  aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+                  aws_access_key_id=IngestionHelper.AWS_ACCESS_KEY_ID,
+                  aws_secret_access_key=IngestionHelper.AWS_SECRET_ACCESS_KEY)
 
-# Set up file and bucket information
-bucket_name = 'project-real-estate'
-folder_path = '/home/ubuntu/Downloads'
 
-# Loop through files in folder
-for filename in os.listdir(folder_path):
-    if filename.endswith('.csv'):
-        file_path = os.path.join(folder_path, filename)
-        file_key = filename
+def transfer_files_S3(bucket_name, folder_path, target_folder):
+    for filename in os.listdir(folder_path):
+        if filename.endswith('.csv'):
+            file_path = os.path.join(folder_path, filename)
+            file_key = f"{target_folder}/{filename}"
+            try:
+                s3.upload_file(file_path, bucket_name, file_key)
+                logging.info(f"Uploaded {file_path} to S3 bucket {bucket_name} as {file_key}")
+            except Exception as e:
+                logging.error(f"An error occurred during uploading file to S3: {str(e)}")
+                raise Exception(f"An error occurred during uploading file to S3: {str(e)}")
 
-        # Upload file to S3
-        s3.upload_file(file_path, bucket_name, file_key)
-        print(f"Uploaded {file_path} to S3 bucket {bucket_name} as {file_key}")
+
+if __name__ == "__main__":
+    transfer_files_S3(IngestionHelper.bucket_name, IngestionHelper.folder_path, IngestionHelper.target_folder)

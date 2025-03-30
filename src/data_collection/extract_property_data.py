@@ -1,4 +1,6 @@
 import logging
+import time
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -7,33 +9,43 @@ from selenium.common.exceptions import TimeoutException
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
 
-def extract_property_data(driver, base_url, page_number):
-    """Extract property data from a single page and return a list of dictionaries."""
-    url = f"{base_url}{page_number}"
-    logging.info("Scraping from this URL: %s", url)
-    driver.get(url)
+def extract_property_data(driver, url_template, page_number):
+    logging.info("Start Scraping Data...")
+
+    url_scrapped = url_template.format(page_number=page_number)
+    logging.info("Scraping from URL: %s", url_scrapped)
+
+    driver.get(url_scrapped)
+    time.sleep(10)
 
     try:
-        WebDriverWait(driver, 30).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, ".card-list.card-list--property"))
+        WebDriverWait(driver, 40).until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".card-intro__title"))
         )
     except TimeoutException as e:
-        print(f"Timeout while loading page {page_number}: {str(e)}")
+        logging.error(f"Timeout while loading page {page_number}: {str(e)}", exc_info=True)
+        return []
 
-    articles = driver.find_elements(By.CSS_SELECTOR, '.card-intro__title')
-    prices = driver.find_elements(By.CSS_SELECTOR, '.card-intro__price')
-    locations = driver.find_elements(By.CSS_SELECTOR, '.card-specifications__location')
-    types = driver.find_elements(By.CSS_SELECTOR, '.card-intro__type')
-    categories = driver.find_elements(By.CSS_SELECTOR, '.card-specifications__amenities')
+    try:
+        articles = driver.find_elements(By.CSS_SELECTOR, '.card-intro__title')
+        prices = driver.find_elements(By.CSS_SELECTOR, '.card-intro__price')
+        locations = driver.find_elements(By.CSS_SELECTOR, '.card-specifications__location')
+        types = driver.find_elements(By.CSS_SELECTOR, '.card-intro__type')
+        categories = driver.find_elements(By.CSS_SELECTOR, '.card-specifications__amenities')
 
-    properties = []
-    for article, price, location, type, category in zip(articles, prices, locations, types, categories):
-        properties.append({
-            "Article": article.text.strip(),
-            "Price": price.text.strip(),
-            "Location": location.text.strip(),
-            "Type": type.text.strip(),
-            "Category": category.text.strip()
-        })
+        properties = []
+        for article, price, location, type_, category in zip(articles, prices, locations, types, categories):
+            properties.append({
+                "Scraped_URL": url_scrapped,
+                "Article": article.text.strip(),
+                "Price": price.text.strip(),
+                "Location": location.text.strip(),
+                "Type": type_.text.strip(),
+                "Category": category.text.strip()
+            })
 
-    return properties
+        logging.info(f"Extracted {len(properties)} records from page {page_number}.")
+        return properties
+    except Exception as e:
+        logging.error(f"Error extracting data on page {page_number}: {e}", exc_info=True)
+        return []
