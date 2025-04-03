@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
 class SaroutyScraper:
     @staticmethod
-    def scrape_all_pages(driver, pages, url):
+    def scrape_all_pages(driver, pages, url, raw_dest_path, filename):
         data = []
 
         for page_number in range(1, pages + 1):
@@ -18,21 +18,31 @@ class SaroutyScraper:
                 logging.info(f"Scraping page {page_number}...")
                 page_data = extract_property_data(driver, url, page_number)
                 data.extend(page_data)
-                time.sleep(5)
+
+                SaroutyScraper.save_data(data, raw_dest_path, filename)
+
+                time.sleep(2)
+
+            except KeyboardInterrupt:
+                logging.warning("Scraping interrompu par l'utilisateur. Sauvegarde des données en cours...")
+                SaroutyScraper.save_data(data, raw_dest_path, filename)
+                logging.info("Données sauvegardées. Arrêt du scraping.")
+                break
+
             except Exception as e:
-                logging.error(f"Error scraping page {page_number}: {e}")
+                logging.error(f"Erreur lors du scraping de la page {page_number}: {e}")
                 break
 
         driver.quit()
-        logging.info(f"Scraping completed. Extracted {len(data)} records.")
+        logging.info(f"Scraping terminé. {len(data)} enregistrements extraits.")
 
         return data
 
     @staticmethod
     def save_data(data, raw_dest_path, filename):
-        if not data:
-            logging.warning("No data to save.")
-            return
+        if isinstance(data, list):
+            data = pd.DataFrame(data)
+
         current_date = pd.to_datetime("today").date()
         data['date'] = current_date
 

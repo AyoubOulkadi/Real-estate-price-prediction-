@@ -1,7 +1,6 @@
 import logging
 import argparse
 import json
-
 import pandas as pd
 
 from src.data_collection.sarouty_scraper import SaroutyScraper
@@ -35,12 +34,12 @@ def parse_parameters():
 
 def main_collection(args):
     if args.source == 'Sales':
-        url_vente_template = args.param_dict.get("url_vente_template")
-        Vente_pages = int(args.param_dict.get("Vente_pages", 1))
+        url_sales_template = args.param_dict.get("url_sales_template")
+        Sales_pages = int(args.param_dict.get("Sales_pages", 1))
         dest_path_sales_path = args.param_dict.get("dest_path_sales_path")
         sales_filename = args.param_dict.get("sales_filename")
         driver = setup_driver()
-        sales_data = SaroutyScraper.scrape_all_pages(driver, Vente_pages, url_vente_template)
+        sales_data = SaroutyScraper.scrape_all_pages(driver, Sales_pages, url_sales_template, dest_path_sales_path, sales_filename)
         sales_df = pd.DataFrame(sales_data)
         SaroutyScraper.save_data(sales_df, dest_path_sales_path,sales_filename)
         logging.info("Sales Data scrapped and saved successfully.")
@@ -51,7 +50,7 @@ def main_collection(args):
         dest_path_rent_path = args.param_dict.get("dest_path_rent_path")
         rent_filename = args.param_dict.get("rent_filename")
         driver = setup_driver()
-        rent_data = SaroutyScraper.scrape_all_pages(driver, rent_pages, url_rent_template)
+        rent_data = SaroutyScraper.scrape_all_pages(driver, rent_pages, url_rent_template, dest_path_rent_path, rent_filename)
         rent_df = pd.DataFrame(rent_data)
         SaroutyScraper.save_data(rent_df, dest_path_rent_path,rent_filename)
         logging.info("Rent Data scrapped and saved successfully.")
