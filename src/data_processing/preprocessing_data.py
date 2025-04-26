@@ -1,59 +1,69 @@
-import sys
-import boto3
-from awsglue.transforms import *
-from awsglue.utils import getResolvedOptions
-from awsglue.context import GlueContext
-from pyspark.context import SparkContext
-from awsglue.dynamicframe import DynamicFrame
-from pyspark.sql import SparkSession
-from awsglue.job import Job
 import pandas as pd
+import os
+from glob import glob
+from config.utils import rent_base_path, sales_base_path, rent_output, sales_output, historical_rent_path, \
+    historical_sales_path
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
-def preprocessing():
-    data = pd.read_csv("s3://project-real-estate/New_dataset1.csv")
-    df = data.drop(['Unnamed: 0'], axis=1)
-    # Split single column into two columns use apply()
-    df[['Bedrooms', 'Bathrooms', 'Surface']] = df["Category"].apply(lambda x: pd.Series(str(x).split("\n")))
-    df1 = df.dropna()
-    df1['Bedrooms'] = df1['Bedrooms'].str.replace(r'bedrooms', '')
-    df1['Bathrooms'] = df1['Bathrooms'].str.replace(r'bathrooms', '')
-    df1['Bedrooms'] = df1['Bedrooms'].str.replace(r'bedroom', '')
-    df1['Bathrooms'] = df1['Bathrooms'].str.replace(r'bathroom', '')
-    df1['Surface'] = df1['Surface'].str.replace(r'm²', '')
-    df1['Price'] = df1['Price'].str.replace(r'MAD', '')
-    columns = ['Surface', 'Price']
-    for i in columns:
-        df1[i] = df1[i].str.replace(r'\u202f', '')
-    df1 = df1[df1.Price != 'Demande de prix']
-    df1['Price'] = df1['Price'].astype(int)
-    df1['Surface'] = df1['Surface'].astype(int)
-    df1['Bathrooms'] = df1['Bathrooms'].astype(int)
-    df2 = df1[df1['Bedrooms'] != 'Studio']
-    df2['Bedrooms'] = df2['Bedrooms'].astype(int)
-    # Split single column into two columns use apply()
-    df2[['Neighborhood', 'City']] = df2['Location'].str.split(', ', 1, expand=True)
-    df3 = df2.drop(["Location", 'Category'], axis=1)
-    return df3
+class SaroutyProcessing:
+    @staticmethod
+    def process_data(filepath: str) -> pd.DataFrame:
+        df = pd.read_csv(filepath)
+
+        df[['Bedrooms', 'Bathrooms', 'Surface']] = df["Category"].apply(
+            lambda x: pd.Series(str(x).split("\n"))
+        )
+
+        df = df.dropna()
+
+        for col in ['Bedrooms', 'Bathrooms', 'Surface', 'Price']:
+            df[col] = df[col].str.replace(r'[^\d]', '', regex=True)
+            df = df[df[col] != '']
+            df[col] = df[col].astype(int)
+
+        df[['Neighborhood', 'City']] = df['Location'].str.split(', ', 1, expand=True)
+        df = df.drop(["Location", "Category"], axis=1)
+
+        return df
+
+    @staticmethod
+    def save_df(df: pd.DataFrame, output_path: str):
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        df.to_csv(output_path, index=False)
+
+    @staticmethod
+    def find_latest_file(base_path: str, pattern: str = "*.csv") -> str:
+        search_path = os.path.join(base_path, '**', pattern)
+        files = glob(search_path, recursive=True)
+        if not files:
+            raise FileNotFoundError(f"No CSV files found in {base_path}")
+        latest_file = max(files, key=os.path.getmtime)
+        return latest_file
+
+    @staticmethod
+    def merge_data(daily_path: str, historical_path: str) -> pd.DataFrame:
+        historical_df = pd.read_csv(historical_path)
+        daily_df = pd.read_csv(daily_path)
+        merged_df = pd.concat([historical_df, daily_df], ignore_index=True)
+        return merged_df
 
 
-args = getResolvedOptions(sys.argv, ['JOB_NAME', 'bucket_name', 'file_path'])
-
-sc = SparkContext.getOrCreate()
-glueContext = GlueContext(sc)
-spark = glueContext.spark_session
-
-job = Job(glueContext)
-job.init(args['JOB_NAME'], args)
-
-s3 = args['bucket_name']
-file_path = args['file_path']
-
-# apply preprocessing function
-preprocessed_df = preprocessing()
-
-# save preprocessed data to S3 as a CSV file
-preprocessed_df.to_csv(f"s3://{s3}/preprocessed_data.csv", index=False)
-
-## Commit the job and exit
-job.commit()
+if __name__ == '__main__':
+    rent_csv = SaroutyProcessing.find_latest_file(rent_base_path)
+    sales_csv = SaroutyProcessing.find_latest_file(sales_base_path)
+    processed_rent_df = SaroutyProcessing.process_data(rent_csv)
+    processed_sales_df = SaroutyProcessing.process_data(sales_csv)
+    SaroutyProcessing.save_df(processed_rent_df, rent_output)
+    SaroutyProcessing.save_df(processed_sales_df, sales_output)
+    logging.info(f"Processed and saved Daily Rent Output Successfully : {rent_output}")
+    logging.info(f"Processed and saved Daily Sales Output Successfully : {sales_output}")
+    SaroutyProcessing.merge_data(rent_output, historical_rent_path)
+    logging.info(f"Merged Daily rent Data with Historical Successfully")
+    SaroutyProcessing.merge_data(sales_output, historical_sales_path)
+    logging.info(f"Merged Daily sales Data with Historical Successfully")

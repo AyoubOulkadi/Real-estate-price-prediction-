@@ -52,8 +52,8 @@ def main_collection(args):
         driver = setup_driver()
         rent_data = SaroutyScraper.scrape_all_pages(driver, rent_pages, url_rent_template, dest_path_rent_path, rent_filename)
         rent_df = pd.DataFrame(rent_data)
-        SaroutyScraper.save_data(rent_df, dest_path_rent_path,rent_filename)
-        logging.info("Rent Data scrapped and saved successfully.")
+        SaroutyScraper.save_data(rent_df, dest_path_rent_path, rent_filename)
+        logging.info("rent Data scrapped and saved successfully.")
 
     else:
         raise ValueError("Source not found in provided parameters.")
