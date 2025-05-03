@@ -8,11 +8,20 @@ x-airflow-common:
     - AIRFLOW__CORE__FERNET_KEY=FB0o_zt4e3Ziq3LdUUO7F2Z95cvFFx16hU8jTeR1ASM=
     - AIRFLOW__CORE__LOAD_EXAMPLES=False
     - AIRFLOW__CORE__LOGGING_LEVEL=INFO
+    - PYTHONPATH=/opt/airflow/src:$PYTHONPATH
   volumes:
     - ./dags:/opt/airflow/dags
     - ./airflow-data/logs:/opt/airflow/logs
     - ./airflow-data/plugins:/opt/airflow/plugins
     - ./airflow-data/airflow.cfg:/opt/airlfow/airflow.cfg
+    - /c/datalake/Real-estate-price-prediction/src:/opt/airflow/src
+    - /c/datalake/Real-estate-price-prediction/Data/raw_data:/opt/airflow/raw_data
+    - /c/datalake/Real-estate-price-prediction/Data/raw_data:/opt/airflow/processed_data
+    - /c/datalake/Real-estate-price-prediction/config:/opt/airflow/config
+    - /host_mnt/c/datalake/Real-estate-price-prediction:/opt/airflow/datalake/Real-estate-price-prediction
+
+
+
   depends_on:
     - postgres
 
@@ -37,7 +46,7 @@ services:
         airflow users create
           --role Admin
           --username airflow
-          --password airflow
+          --password ayoub1234
           --email airflow@airflow.com
           --firstname airflow
           --lastname airflow )

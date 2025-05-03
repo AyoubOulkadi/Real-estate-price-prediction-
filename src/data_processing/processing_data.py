@@ -51,6 +51,7 @@ class SaroutyProcessing:
         historical_df = pd.read_csv(historical_path)
         daily_df = pd.read_csv(daily_path)
         merged_df = pd.concat([historical_df, daily_df], ignore_index=True)
+        merged_df = merged_df.drop_duplicates()
         return merged_df
 
 
