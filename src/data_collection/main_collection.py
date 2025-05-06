@@ -6,6 +6,7 @@ import pandas as pd
 from src.data_collection.sarouty_scraper import SaroutyScraper
 from src.data_collection.setup_driver import setup_driver
 
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
 
@@ -45,7 +46,7 @@ def main_collection(args):
         logging.info("Sales Data scrapped and saved successfully.")
     elif args.source == 'Rent':
         url_rent_template = args.param_dict.get("url_rent_template")
-        logging.info("url_rent_template", url_rent_template)
+        logging.info("url_rent_template: %s", url_rent_template)
         rent_pages = int(args.param_dict.get("rent_pages", 1))
         dest_path_rent_path = args.param_dict.get("dest_path_rent_path")
         rent_filename = args.param_dict.get("rent_filename")

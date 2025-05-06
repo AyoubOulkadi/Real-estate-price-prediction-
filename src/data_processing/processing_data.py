@@ -55,16 +55,24 @@ class SaroutyProcessing:
         return merged_df
 
 
-if __name__ == '__main__':
+def run_processing_pipeline():
     rent_csv = SaroutyProcessing.find_latest_file(rent_base_path)
     sales_csv = SaroutyProcessing.find_latest_file(sales_base_path)
+
     processed_rent_df = SaroutyProcessing.process_data(rent_csv)
     processed_sales_df = SaroutyProcessing.process_data(sales_csv)
+
     SaroutyProcessing.save_df(processed_rent_df, rent_output)
     SaroutyProcessing.save_df(processed_sales_df, sales_output)
-    logging.info(f"Processed and saved Daily Rent Output Successfully : {rent_output}")
-    logging.info(f"Processed and saved Daily Sales Output Successfully : {sales_output}")
-    SaroutyProcessing.merge_data(rent_output, historical_rent_path)
-    logging.info(f"Merged Daily rent Data with Historical Successfully")
-    SaroutyProcessing.merge_data(sales_output, historical_sales_path)
-    logging.info(f"Merged Daily sales Data with Historical Successfully")
+
+    logging.info(f"Processed and saved Daily Rent Output: {rent_output}")
+    logging.info(f"Processed and saved Daily Sales Output: {sales_output}")
+
+    merged_rent = SaroutyProcessing.merge_data(rent_output, historical_rent_path)
+    SaroutyProcessing.save_df(merged_rent, historical_rent_path)
+    logging.info(f"Merged rent data with historical.")
+
+    merged_sales = SaroutyProcessing.merge_data(sales_output, historical_sales_path)
+    SaroutyProcessing.save_df(merged_sales, historical_sales_path)
+    logging.info(f"Merged sales data with historical.")
+run_processing_pipeline()

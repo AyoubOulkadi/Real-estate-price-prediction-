@@ -21,7 +21,7 @@ default_args = {
 real_estate_dag = DAG('real_estate_dag',
 		default_args=default_args,
 		description='real_estate',
-		schedule_interval='@daily',
+		schedule_interval='@daily_data',
 		catchup=False,
 		tags=['example, helloworld']
 )

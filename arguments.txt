@@ -1,8 +1,7 @@
 --source
 Sales
 --param
-"{ \"url_vente_template\": \"https://www.sarouty.ma/acheter/proprietes-a-vendre.html?page={page_number}\", \"Vente_pages\": 2, \"base_raw_data_path\": \"C:\\datalake\\Real-estate-price-prediction\\Data\\raw_Data\"}"
-
+"{\"url_sales_template\": \"https://www.sarouty.ma/acheter/proprietes-a-vendre.html?page={page_number}\", \"Sales_pages\": 2,\"sales_filename\": \"daily_sarouty_sales.csv\", \"base_raw_data_path\": \"C:\\datalake\\Real-estate-price-prediction\\Data\\raw_Data\", \"dest_path_sales_path\": \"C:\\datalake\\Real-estate-price-prediction\\Data\\raw_Data\\sales\\daily_data\"}"
 
 --source
 Rent

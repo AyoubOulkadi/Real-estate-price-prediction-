@@ -3,21 +3,7 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
-        <entry key="\Data\processed_Data\rent\daily\year=2025\month=04\day=26\processed_sarouty_rent_2025_04_26.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\Data\processed_Data\rent\historical\processed_sarouty_rent.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\Data\processed_Data\sales\daily\year=2025\month=03\day=29\processed_sarouty_sales_2025_04_24.csv">
+        <entry key="\Data\processed_data\rent\historical_data\processed_sarouty_rent.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -32,13 +18,6 @@
           </value>
         </entry>
         <entry key="\Data\raw_Data\rent\daily_data\year=2025\month=04\day=26\daily_sarouty_rent.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\Data\raw_Data\rent\year=2025\month=03\day=29\Sarouty_sales.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -60,13 +39,6 @@
           </value>
         </entry>
         <entry key="\Data\raw_Data\sales\daily_data\year=2025\month=04\day=26\sarouty_sales.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\Data\raw_Data\sales\historical_data\year=2025\month=04\day=24\sarouty_sales.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
