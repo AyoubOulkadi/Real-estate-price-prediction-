@@ -15,6 +15,7 @@ class SaroutyProcessing:
     @staticmethod
     def process_data(filepath: str) -> pd.DataFrame:
         df = pd.read_csv(filepath)
+        print(df.columns)
 
         df[['Bedrooms', 'Bathrooms', 'Surface']] = df["Category"].apply(
             lambda x: pd.Series(str(x).split("\n"))
@@ -75,4 +76,5 @@ def run_processing_pipeline():
     merged_sales = SaroutyProcessing.merge_data(sales_output, historical_sales_path)
     SaroutyProcessing.save_df(merged_sales, historical_sales_path)
     logging.info(f"Merged sales data with historical.")
+
 run_processing_pipeline()

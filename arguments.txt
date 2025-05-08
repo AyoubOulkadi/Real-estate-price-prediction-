@@ -7,3 +7,5 @@ Sales
 Rent
 --param
 "{ \"url_rent_template\": \"https://www.sarouty.ma/fr/recherche?c=2&fu=0&ob=mr&page={page_number}&rp=m\", \"rent_filename\": \"daily_sarouty_rent.csv\", \"rent_pages\": 2, \"dest_path_rent_path\": \"C:\\datalake\\Real-estate-price-prediction\\Data\\raw_Data\\rent\\daily_data\"}"
+
+

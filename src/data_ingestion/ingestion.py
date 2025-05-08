@@ -1,82 +1,108 @@
-import boto3
+from sqlalchemy import text
+from config.utils import engine, databases, base_path, categories, subfolder
 import os
+import pandas as pd
 import logging
-import argparse
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-
-def parse_parameters():
-    """
-    Parses parameters from the command line.
-
-    Returns
-    -------
-    tuple
-      (bucket_name, source, selected_params)
-    """
-
-    cmd_arg_parser = argparse.ArgumentParser(allow_abbrev=False)
-
-    cmd_arg_parser.add_argument('--bucket-name', type=str, required=True,
-                                help='Bucket name to store files in S3')
-    cmd_arg_parser.add_argument('--folder-path', type=str, required=True,
-                                help='Actual Path within the data exists')
-    cmd_arg_parser.add_argument('--target-folder', type=str, required=True,
-                                help='folder to store the daily_data data')
-
-    args = cmd_arg_parser.parse_args()
-    return args
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
 
-def get_credentials():
-    AWS_ACCESS_KEY_ID = ""
-    AWS_SECRET_ACCESS_KEY = ""
-    return AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+class SaroutyIngestion:
+    @staticmethod
+    def create_databases(engine, databases):
+        with engine.connect() as conn:
+            for db in databases:
+                result = conn.execute(text(f"SHOW DATABASES LIKE '{db}'"))
+                if result.fetchone() is None:
+                    conn.execute(text(f"CREATE DATABASE {db}"))
+                else:
+                    logging.info(f"Database {db} already exists.")
+
+    @staticmethod
+    def ingest_data(engine, base_path, categories, subfolder):
+        with engine.connect() as conn:
+            for category in categories:
+                folder_path = os.path.join(base_path, category, subfolder)
+                if not os.path.exists(folder_path):
+                    logging.info(f"Folder does not exist: {folder_path}")
+                    continue
+
+                for filename in os.listdir(folder_path):
+                    if filename.endswith(".csv"):
+                        file_path = os.path.join(folder_path, filename)
+                        df = pd.read_csv(file_path)
+
+                        df.columns = df.columns.str.strip()
+
+                        df.rename(columns={
+                            'scraped_url': 'Scraped_URL',
+                            'article': 'Article',
+                            'price': 'Price',
+                            'type': 'Type',
+                            'date': 'date',
+                            'bedrooms': 'Bedrooms',
+                            'bathrooms': 'Bathrooms',
+                            'surface': 'Surface',
+                            'neighborhood': 'Neighborhood',
+                            'city': 'City'
+                        }, inplace=True)
+
+                        df['Price'] = pd.to_numeric(df['Price'], errors='coerce')
+                        df['Bedrooms'] = pd.to_numeric(df['Bedrooms'], errors='coerce')
+                        df['Bathrooms'] = pd.to_numeric(df['Bathrooms'], errors='coerce')
+                        df['Surface'] = pd.to_numeric(df['Surface'], errors='coerce')
+                        df['date'] = pd.to_datetime(df['date'], errors='coerce').dt.date
+
+                        db_name = f"{category}_db"
+                        table_name = f"{category}_table"
+                        conn.execute(text(f"USE {db_name}"))
+
+                        # Create table with Article as unique field
+                        conn.execute(text(f"""
+                            CREATE TABLE IF NOT EXISTS {table_name} (
+                                id INT PRIMARY KEY AUTO_INCREMENT,
+                                Scraped_URL VARCHAR(255),
+                                Article VARCHAR(255),
+                                Price FLOAT,
+                                Type VARCHAR(100),
+                                date DATE,
+                                Bedrooms INT,
+                                Bathrooms INT,
+                                Surface FLOAT,
+                                Neighborhood VARCHAR(255),
+                                City VARCHAR(100)
+                            )
+                        """))
+
+                        # Fetch existing articles
+                        existing_articles = conn.execute(text(f"SELECT Article FROM {table_name}")).fetchall()
+                        existing_article_set = set(row[0] for row in existing_articles)
+
+                        # Keep only new articles
+                        new_df = df[~df['Article'].isin(existing_article_set)]
+
+                        if not new_df.empty:
+                            insert_query = text(f"""
+                                INSERT INTO {table_name} (
+                                    Scraped_URL, Article, Price, Type, date,
+                                    Bedrooms, Bathrooms, Surface, Neighborhood, City
+                                ) VALUES (
+                                    :Scraped_URL, :Article, :Price, :Type, :date,
+                                    :Bedrooms, :Bathrooms, :Surface, :Neighborhood, :City
+                                )
+                            """)
+                            conn.execute(insert_query, new_df.to_dict(orient="records"))
+                            logging.info(
+                                f"Ingested {len(new_df)} new records from {file_path} into {db_name}.{table_name}")
+                        else:
+                            logging.info(f"No new data found in {file_path}. Skipping ingestion.")
 
 
-def transfer_files_S3(bucket_name, folder_path, target_folder):
-    aws_access_key, aws_secret_key = get_credentials()
-
-    s3 = boto3.client(
-        "s3",
-        aws_access_key_id=aws_access_key,
-        aws_secret_access_key=aws_secret_key
-    )
-
-    if not os.path.exists(folder_path):
-        logging.error(f"Folder path does not exist: {folder_path}")
-        return
-
-    logging.info(f"Scanning files in {folder_path}...")
-
-    file_count = 0
-    for root, dirs, files in os.walk(folder_path):
-        for file in files:
-            local_path = os.path.join(root, file)
-            relative_path = os.path.relpath(local_path, folder_path)
-            s3_key = os.path.join(target_folder, relative_path).replace("\\", "/")
-
-            try:
-                s3.upload_file(local_path, bucket_name, s3_key)
-                logging.info(f"Uploaded {local_path} to s3://{bucket_name}/{s3_key}")
-                file_count += 1
-            except Exception as e:
-                logging.error(f"Failed to upload {local_path}: {str(e)}")
-
-    if file_count == 0:
-        logging.warning("No files found to upload.")
-    else:
-        logging.info(f"Total files uploaded: {file_count}")
+def create_databases():
+    SaroutyIngestion.create_databases(engine, databases)
 
 
-if __name__ == "__main__":
-    args = parse_parameters()
-    aws_access_key, aws_secret_key = get_credentials()
-
-    s3 = boto3.client(
-        "s3",
-        aws_access_key_id=aws_access_key,
-        aws_secret_access_key=aws_secret_key
-    )
-    transfer_files_S3(args.bucket_name, args.folder_path, args.target_folder)
+def ingest_data():
+    SaroutyIngestion.ingest_data(engine, base_path, categories, subfolder)
+create_databases()
+ingest_data()
