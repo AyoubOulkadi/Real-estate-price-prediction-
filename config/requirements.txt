@@ -1,4 +1,4 @@
-selenium
+selenium>=4.0.0
 webdriver-manager
 boto3>=1.35.30
 pandas>=1.2.4

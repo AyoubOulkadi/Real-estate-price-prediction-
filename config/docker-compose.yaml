@@ -1,7 +1,8 @@
 version: '3'
 x-airflow-common:
   &airflow-common
-  image: apache/airflow:2.0.0
+  build: .
+  image: custom-airflow:2.0.0
   environment:
     - AIRFLOW__CORE__EXECUTOR=LocalExecutor
     - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
@@ -19,9 +20,6 @@ x-airflow-common:
     - /c/datalake/Real-estate-price-prediction/Data/raw_data:/opt/airflow/processed_data
     - /c/datalake/Real-estate-price-prediction/config:/opt/airflow/config
     - /host_mnt/c/datalake/Real-estate-price-prediction:/opt/airflow/datalake/Real-estate-price-prediction
-
-
-
   depends_on:
     - postgres
 
